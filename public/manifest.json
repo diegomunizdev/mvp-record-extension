@@ -13,7 +13,15 @@
     "storage",
     "activeTab",
     "scripting",
-    "http://localhost:3001/*",
-    "desktopCapture"
+    "desktopCapture",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": ["http://*/*", "https://*/*", "ws://*/*"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
   ]
 }

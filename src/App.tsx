@@ -1,12 +1,12 @@
 import React from "react";
 
 function App() {
-  const start = () => {
-    chrome.runtime.sendMessage({ action: "startRecording" });
+  const start = async () => {
+    await chrome.runtime.sendMessage({ action: "start" });
   };
 
-  const stop = () => {
-    chrome.runtime.sendMessage({ action: "stopRecording" });
+  const stop = async () => {
+    await chrome.runtime.sendMessage({ action: "stop" });
   };
 
   return (
