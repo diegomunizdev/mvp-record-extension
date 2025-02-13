@@ -47,6 +47,7 @@ function App() {
 
   const stop = async () => {
     mediaRecorder.stop();
+    socket.send(JSON.stringify({ event: "end" }));
     socket.onclose = () => {
       console.log("Desconectado do websocket");
     };
