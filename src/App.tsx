@@ -1,62 +1,52 @@
-import { useMemo } from "react";
+import { Fragment, useLayoutEffect, useState } from "react";
+import useRecord from "./hooks/useRecord";
 
 function App() {
-  const socket = useMemo(() => new WebSocket("ws://localhost:3002"), []);
+  const [isPopup, setIsPopup] = useState<boolean>(false);
 
-  let mediaRecorder: MediaRecorder;
-  let streamId: string = "";
+  const { start, stop, video, pause, resume } = useRecord();
 
-  socket.onopen = () => {
-    console.log("Conectado ao WebSocket");
-  };
+  useLayoutEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has("popup") && urlParams.get("popup") === "true") {
+      setIsPopup(true);
+    } else {
+      setIsPopup(false);
+    }
 
-  socket.onerror = (e) => {
-    console.log("ERROR:", e);
-    throw new Error("Websocket error.");
-  };
+    localStorage.setItem("teste", "teste");
+  }, []);
 
-  async function start() {
-    await navigator.mediaDevices
-      .getDisplayMedia({ video: true, audio: true })
-      .then((stream) => {
-        streamId = stream.id;
-        mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-
-        mediaRecorder.ondataavailable = async (event) => {
-          if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) {
-            const arrayBuffer = await event.data.arrayBuffer();
-            const uint8Array = new Uint8Array(arrayBuffer);
-            console.log("enviando os dados");
-            socket.send(
-              JSON.stringify({
-                event: "message",
-                data: { streamId: stream.id, buffer: uint8Array },
-              })
-            );
-          }
-        };
-
-        mediaRecorder.start(1000);
-      })
-      .catch((error) => {
-        throw new Error(error);
-      });
+  async function pipOpen() {
+    await chrome.runtime.sendMessage({ action: "pip" });
+    localStorage.setItem("teste", "teste");
   }
 
-  const stop = async () => {
-    mediaRecorder.stop();
-    socket.send(JSON.stringify({ event: "end", data: { streamId: streamId } }));
-    socket.onclose = () => {
-      console.log("Desconectado do websocket");
-    };
-    socket.close();
-  };
-
+  console.log({ video });
   return (
-    <div style={{ width: 800, height: 1000 }}>
-      <button onClick={start}>start</button>
-      <button onClick={stop}>stop</button>
-    </div>
+    <Fragment>
+      {isPopup ? (
+        <Fragment>
+          <video ref={video} controls={false} width="100%" autoPlay />
+          <div
+            style={{
+              gap: 8,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "row",
+            }}
+          >
+            <button onClick={async () => await start()}>Start</button>
+            <button onClick={async () => await stop()}>Stop</button>
+            <button onClick={() => pause()}>pause</button>
+            <button onClick={() => resume()}>resume</button>
+          </div>
+        </Fragment>
+      ) : (
+        <button onClick={pipOpen}>Iniciar gravação</button>
+      )}
+    </Fragment>
   );
 }
 

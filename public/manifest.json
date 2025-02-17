@@ -10,22 +10,14 @@
     }
   },
   "background": {
-    "service_worker": "service_worker.js",
-    "persistent": false
+    "service_worker": "background.js"
   },
-  "permissions": [
-    "storage",
-    "activeTab",
-    "scripting",
-    "desktopCapture",
-    "tabCapture",
-    "tabs"
-  ],
-  "host_permissions": ["http://*/*", "https://*/*", "ws://*/*"],
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content_script.js"]
-    }
+  "permissions": ["activeTab", "storage", "tabs", "windows"],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*",
+    "ws://*/*",
+    "chrome-extension://*/*",
+    "chrome://extensions/"
   ]
 }
