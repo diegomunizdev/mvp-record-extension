@@ -1,52 +1,42 @@
-import { Fragment, useLayoutEffect, useState } from "react";
-import useRecord from "./hooks/useRecord";
+import { Fragment } from "react";
 
 function App() {
-  const [isPopup, setIsPopup] = useState<boolean>(false);
-
-  const { start, stop, video, pause, resume } = useRecord();
-
-  useLayoutEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has("popup") && urlParams.get("popup") === "true") {
-      setIsPopup(true);
-    } else {
-      setIsPopup(false);
-    }
-
-    localStorage.setItem("teste", "teste");
-  }, []);
-
-  async function pipOpen() {
-    await chrome.runtime.sendMessage({ action: "pip" });
-    localStorage.setItem("teste", "teste");
+  async function start() {
+    chrome.tabs.query(
+      { active: true, currentWindow: true },
+      async function (tabs) {
+        if (tabs.length > 0) {
+          const activeTab = tabs[0]; // A primeira aba na lista de resultados
+          await chrome.runtime.sendMessage({
+            action: "start",
+            tab: activeTab,
+            navigator: navigator,
+          });
+        }
+      }
+    );
   }
 
-  console.log({ video });
+  async function stop() {
+    chrome.tabs.query(
+      { active: true, currentWindow: true },
+      async function (tabs) {
+        if (tabs.length > 0) {
+          const activeTab = tabs[0]; // A primeira aba na lista de resultados
+          await chrome.runtime.sendMessage({
+            action: "stop",
+            tab: activeTab,
+          });
+        }
+      }
+    );
+  }
+
   return (
-    <Fragment>
-      {isPopup ? (
-        <Fragment>
-          <video ref={video} controls={false} width="100%" autoPlay />
-          <div
-            style={{
-              gap: 8,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              flexDirection: "row",
-            }}
-          >
-            <button onClick={async () => await start()}>Start</button>
-            <button onClick={async () => await stop()}>Stop</button>
-            <button onClick={() => pause()}>pause</button>
-            <button onClick={() => resume()}>resume</button>
-          </div>
-        </Fragment>
-      ) : (
-        <button onClick={pipOpen}>Iniciar gravação</button>
-      )}
-    </Fragment>
+    <div style={{ padding: 20, gap: 20 }}>
+      <button onClick={start}>INICIAR GRAVAÇÃO</button>
+      <button onClick={stop}>PARAR GRAVAÇÃO</button>
+    </div>
   );
 }
 
